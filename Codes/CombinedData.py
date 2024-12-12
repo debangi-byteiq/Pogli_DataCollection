@@ -170,7 +170,7 @@ def main(url):
         print("This might take a while...")
 
         # Define the Excel file path
-        excel_path = "Combined_data_BSE.xlsx"
+        excel_path = "../Excel Files/Combined_data_BSE.xlsx"
 
         try:
             #Scrape all the data
