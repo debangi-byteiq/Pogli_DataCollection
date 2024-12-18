@@ -90,9 +90,9 @@ def brand(glassdoor_link, ambitionBox_link, justDial_link, crisil_link, ticker_l
         try:
             # Load existing data from the worksheet
             with pd.ExcelFile(excel_path, engine='openpyxl') as excel_file:
-                if 'Company f' in excel_file.sheet_names:
+                if 'Company Brand' in excel_file.sheet_names:
                     # Read existing data
-                    brand_data_existing = pd.read_excel(excel_path, sheet_name='Company Products', engine='openpyxl')
+                    brand_data_existing = pd.read_excel(excel_path, sheet_name='Company Brand', engine='openpyxl')
                     # Combine existing data with new data
                     brand_combined = pd.concat([brand_data_existing, df], ignore_index=True)
                 else:
@@ -110,3 +110,4 @@ def brand(glassdoor_link, ambitionBox_link, justDial_link, crisil_link, ticker_l
 
         except Exception as e:
             print(f"An error occurred: {e}")
+    
