@@ -145,96 +145,6 @@ def get_meetings_data(page, company, link, industry):
     return combined_meetings_df
 
 
-
-# def get_peer_group(page,company):
-#     page.get_by_role("heading", name="Peer Group").get_by_role("link").click()
-#     time.sleep(3)
-#     soup = BeautifulSoup(page.content(), 'html.parser')
-#     element1 = soup.find('div',id = "qtly")
-#     element2 = element1.find_all('table')[0]
-#     element = element2.find('table')
-#     row_list= list()
-#     tr_heads = element.find('thead').find_all('tr')
-#     tr_body = element.find('tbody').find_all('tr')
-#     columns = list()
-#     for tr_tag in tr_body:
-#         l = list()
-#         try:
-#             td_tags = tr_tag.find_all('td', class_='tdcolumn')
-#             for td_tag in td_tags:
-#                 l.append(td_tag.text.strip())
-#         except:
-#             continue
-#         row_list.append(l)
-#     for th_tag in tr_heads:
-#         td_tags = th_tag.find_all('td', class_='tableheading')
-#         for td_tag in td_tags:
-#             columns.append(td_tag.text.strip())
-#     dataframe1 = pd.DataFrame(row_list,columns=columns)
-#     dataframe1 = dataframe1[:-3]
-#     page.get_by_role('link', name="Annual Trends").click()
-#     time.sleep(3)
-#     soup1 = BeautifulSoup(page.content(), 'html.parser')
-#     element3 = soup1.find('div',id = "ann")
-#     element4 = element3.find_all('table')[0]
-#     element5 = element4.find('table')
-#     row_list1= list()
-#     tr_heads1 = element5.find('thead').find_all('tr')
-#     tr_body1 = element5.find('tbody').find_all('tr')
-#     columns1 = list()
-#     for tr_tag1 in tr_body1:
-#         l1 = list()
-#         try:
-#             td_tags1 = tr_tag1.find_all('td', class_='tdcolumn')
-#             for td_tag1 in td_tags1:
-#                 l1.append(td_tag1.text.strip())
-#         except:
-#             continue
-#         row_list1.append(l1)
-#     for th_tag1 in tr_heads1:
-#         td_tags1 = th_tag1.find_all('td', class_='tableheading')
-#         for td_tag1 in td_tags1:
-#             columns1.append(td_tag1.text.strip())
-#     dataframe2 = pd.DataFrame(row_list1,columns=columns1)
-#     dataframe2 = dataframe2[:-3]
-#
-#     page.get_by_role('link', name="Bonus & Dividends").click()
-#     time.sleep(3)
-#     soup1 = BeautifulSoup(page.content(), 'html.parser')
-#     element6 = soup1.find('div',id = "bnd")
-#     element7 = element6.find_all('table')[0]
-#     element8 = element7.find('table')
-#     row_list2= list()
-#     tr_heads2 = element8.find('thead').find_all('tr')
-#     tr_body2 = element8.find('tbody').find_all('tr')
-#     columns2 = list()
-#     for tr_tag2 in tr_body2:
-#         l2 = list()
-#         try:
-#             td_tags2 = tr_tag2.find_all('td', class_='tdcolumn')
-#             for td_tag2 in td_tags2:
-#                 l2.append(td_tag2.text.strip())
-#         except:
-#             continue
-#         row_list2.append(l2)
-#     for th_tag2 in tr_heads2:
-#         td_tags2 = th_tag2.find_all('td', class_='tableheading')
-#         for td_tag2 in td_tags2:
-#             columns2.append(td_tag2.text.strip())
-#     dataframe3 = pd.DataFrame(row_list2,columns=columns2)
-#     # # dataframe = pd.concat([dataframe1,dataframe2], axis=1)
-#     file_path = f'{company}_peer_group.xlsx'
-#
-# # Use ExcelWriter to write multiple DataFrames to different sheets
-#     with pd.ExcelWriter(file_path) as writer:
-#         dataframe1.to_excel(writer, sheet_name='Sheet1', index=False)
-#         dataframe2.to_excel(writer, sheet_name='Sheet2', index=False)
-#         dataframe3.to_excel(writer, sheet_name='Sheet3', index=False)
-#
-#     # dataframe1.to_excel(f'{company}_financial_results_quaterly.xlsx', index=False)
-#     # dataframe2.to_excel(f'{company}_financial_results_annual.xlsx', index=False)
-
-
 def main(url):
     l = url.split('/')
     company = l[4].strip().capitalize()
@@ -249,7 +159,7 @@ def main(url):
         time.sleep(2)
 
         # Specify the path where you want to save the Excel file
-        excel_path = "../Excel Files/Financial_Bse_data.xlsx"
+        excel_path = "../Excel Files/FinancialData_BSE.xlsx"
         all_financial_quarterly_data = pd.DataFrame()
         all_financial_annual_data = pd.DataFrame()
         all_meetings_data = pd.DataFrame()
