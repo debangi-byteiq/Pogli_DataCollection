@@ -10,6 +10,7 @@ from pydantic import Field, BaseModel
 import os
 from BrandRatings import brand
 from Description import products
+from Customers import customers
 
 os.environ["GOOGLE_API_KEY"] = "AIzaSyAjP37AbKfS7gHyy72DkQDXckP5FBIRwto"
 llm = Gemini()
@@ -42,8 +43,8 @@ def annualReport_details(doc_text):
         csr_applicable: Optional[str] = Field(description="CSR Applicable (Yes/No)")
         turnover: Optional[str] = Field(description="Turnover")
         net_worth: Optional[str] = Field(description="Net Worth")
-        phone_number: Optional[str] = Field(description="Phone Number")
-        email_id: Optional[str] = Field(description="Email ID")
+        phone_number: Optional[str] = Field(description="Phone Number of the company")
+        email_id: Optional[str] = Field(description="Email ID of the company")
         founder_name: Optional[str] = Field(description="Founder Name")
         founder_designation: Optional[str] = Field(description="Founder Designation")
         foundation_date: Optional[str] = Field(description="Foundation Date")
@@ -83,6 +84,7 @@ def BRSR_details(doc_text):
 
     class CompanyDetails(BaseModel):
         """ Company details """
+
         company_name: Optional[str] = Field(description="Company Name")
         industry_name: Optional[str] = Field(description="Industry Name")
         year: Optional[int] = Field(description="Reporting Year")
@@ -95,7 +97,7 @@ def BRSR_details(doc_text):
 
     class Details(BaseModel):
         """ Company Details """
-        company_details: Optional[CompanyDetails] = Field(description="Details about the company, including ESG data")
+        company_details: List[CompanyDetails] = Field(description="Details about the company, including ESG data")
 
     details = extract_pydantic_data(Details, prompt, ' '.join(doc_text))
     return details
@@ -110,29 +112,21 @@ def extract_pydantic_data(model, prompt, text, llm=llm):
     )
     output = program(text=text)
     details = output.model_dump()
-
     return details
 
 
 def extract_clean_text_from_pdf(pdf_path):
     print("Cleaning data from the given pdf")
-    # Open the provided PDF file
     doc = fitz.open(pdf_path)
-
-    # Initialize an empty string to hold all text
     text = ""
-
-    # Iterate through each page in the document
     for page_num in range(len(doc)):
-        page = doc.load_page(page_num)  # Load the page
-        text += page.get_text()  # Extract text from the page
-
-    # Remove extra spaces, line breaks, and non-essential formatting
-    clean_text = re.sub(r'\s+', ' ', text).strip()  # Replace multiple spaces and newlines with a single space
+        page = doc.load_page(page_num)
+        text += page.get_text()
+    clean_text = re.sub(r'\s+', ' ', text).strip()
     return clean_text
 
 
-def update_existing_excel(annualReport_data, BRSR_data, excel_path):
+def update_existing_excel(annualReport_data, BRSR_data, excel_path, company_name, industry_name):
     """
     This function appends data to an existing Excel sheet named "Company Details".
     If the file doesn't exist, it creates a new file with the data.
@@ -146,6 +140,7 @@ def update_existing_excel(annualReport_data, BRSR_data, excel_path):
         None
     """
     print("Appending data to Excel")
+    print(BRSR_data)
     try:
         # Try to read the existing file
         annual_report_data_existing = pd.read_excel(excel_path, sheet_name='Company Details', engine='openpyxl')
@@ -153,6 +148,8 @@ def update_existing_excel(annualReport_data, BRSR_data, excel_path):
         # Convert the new data into a DataFrame
         annual_report_new = pd.DataFrame([annualReport_data])
         brsr_new = pd.DataFrame([BRSR_data])
+        annual_report_new['Company Name'], brsr_new['Company Name'] = company_name
+        annual_report_new['Industry Name'], brsr_new['Industry Name'] = industry_name
         # Append the new data to the existing DataFrame
         annual_report_combined = pd.concat([annual_report_data_existing, annual_report_new], ignore_index=True)
         brsr_combined = pd.concat([brsr_data_existing, brsr_new], ignore_index=True)
@@ -160,7 +157,6 @@ def update_existing_excel(annualReport_data, BRSR_data, excel_path):
         with pd.ExcelWriter(excel_path, engine='openpyxl', mode='w') as writer:
             annual_report_combined.to_excel(writer, sheet_name='Company Details', index=False)
             brsr_combined.to_excel(writer, sheet_name='Company ESG', index=False)
-
     except FileNotFoundError:
         print(f"Excel file not found: {excel_path}. Creating a new file.")
         # If the file doesn't exist, create a new DataFrame with the data
@@ -178,17 +174,14 @@ def main():
     warnings.filterwarnings("ignore")
     company_name = ''
     industry_name = ''
-    annual_reports_path = "../AnnualReports/Avantl_AnnualReports.pdf"
+    annual_reports_path = "../AnnualReports/india nippon.pdf"
     brsr_path = "../BRSR/indiaNippon_BRSR.pdf"
-    excel_path = "../Excel Files/pdfData.xlsx"
+    excel_path = "../ExcelFiles/pdfData.xlsx"
     glassdoor_link = 'https://www.glassdoor.co.in/Overview/Working-at-Signpost-India-EI_IE2372115.11,25.htm'
     ambitionBox_link = 'https://www.ambitionbox.com/reviews/signpost-india-reviews'
     justDial_link = 'https://www.justdial.com/jdmart/Mumbai/Signpost-India-Pvt-Ltd-Registered-Office-Near-Santacruz-Airport-Terminal-Vile-Parle-East/022PXX22-XX22-181127114814-B8L6_BZDET/catalogue'
     crisil_link = 'https://www.crisilratings.com/en/home/our-business/ratings/company-factsheet.CTODAL.html'
     ticker_link = 'https://ticker.finology.in/company/SIGNPOST'
-    product_list = ['DOOH billboards', 'Digital bus queue shelters', 'Hybrid mobility solutions (e-bikes)',
-                'Traffic surveillance booths', 'Street accessible libraries', 'Ad-tech solutions (Captura)',
-                'Geospatial data based media planning', 'Campaign footfall ROI mapping']
 
     print("Starting Annual Reports Scraper")
     annual_report_text = extract_clean_text_from_pdf(annual_reports_path)
@@ -199,13 +192,19 @@ def main():
     brsr_text = extract_clean_text_from_pdf(brsr_path)
     brsr_details = BRSR_details(brsr_text)
 
-    update_existing_excel(annual_report_details['company_details'], brsr_details['company_details'], excel_path)
+    update_existing_excel(annual_report_details['company_details'], brsr_details['company_details'], excel_path, company_name, industry_name)
 
     # Scraping brand data
     brand(glassdoor_link, ambitionBox_link, justDial_link, crisil_link, ticker_link, company_name, industry_name)
 
     # Scraping product data
-    products(product_list, company_name, industry_name)
+    print("Collecting product data")
+    products(annual_report_details['company_details']['products'], company_name, industry_name)
+
+    # Scraping Cutomers data
+    print("Collecting customer data")
+    customers(annual_report_details['company_details']['customers'], company_name, industry_name)
+
 
 
 

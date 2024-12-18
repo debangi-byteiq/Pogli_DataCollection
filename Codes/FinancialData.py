@@ -159,7 +159,7 @@ def main(url):
         time.sleep(2)
 
         # Specify the path where you want to save the Excel file
-        excel_path = "../Excel Files/FinancialData_BSE.xlsx"
+        excel_path = "../ExcelFiles/FinancialData_BSE.xlsx"
         all_financial_quarterly_data = pd.DataFrame()
         all_financial_annual_data = pd.DataFrame()
         all_meetings_data = pd.DataFrame()

@@ -1,84 +1,81 @@
-from playwright.sync_api import sync_playwright
+from llama_index.llms.gemini import Gemini
+from llama_index.core.prompts import PromptTemplate
+from llama_index.core.program import LLMTextCompletionProgram
+from pydantic import BaseModel, Field, ValidationError
+import fitz  # for PDF text extraction
 import re
+import os
 import pandas as pd
-import time
+from typing import Optional
+from typing import List, Optional  # Add this line
+from pydantic import BaseModel, Field
 
 
-def search_and_get_rating(page, base_url, search_selector, query, result_selector, rating_selector, rating_regex):
-    # Navigate to the base URL
-    page.goto(base_url)
-    time.sleep(2)
+# Set up LLM (Google Gemini)
+os.environ["GOOGLE_API_KEY"] = "AIzaSyAjP37AbKfS7gHyy72DkQDXckP5FBIRwto"
+llm = Gemini()
 
-    try:
-        # Enter the query in the search bar and submit
-        search_bar = page.locator(search_selector)
-        search_bar.fill(query)
-        search_bar.press("Enter")
-        time.sleep(3)  # Wait for the results to load
+# Function to extract clean text from PDF
+def extract_clean_text_from_pdf(pdf_path):
+    doc = fitz.open(pdf_path)
+    text = ""
+    for page_num in range(len(doc)):
+        page = doc.load_page(page_num)
+        text += page.get_text()
+    clean_text = re.sub(r'\s+', ' ', text).strip()
+    return clean_text
 
-        # Click the first relevant result
-        result_link = page.locator(result_selector).first
-        result_link.click()
-        time.sleep(3)  # Wait for the company page to load
+def get_company_details(doc_text):
+    prompt = PromptTemplate(
+        """
+        You are an expert assistant for extracting company information from documents in JSON format.
+        Extract the data carefully by analyzing and understanding the provided document.
+        REMEMBER to return extracted data only from the provided context.
+        CONTEXT:
+        {text}
+        """
+    )
 
-        # Extract the rating
-        rating_element = page.locator(rating_selector)
-        text = rating_element.text_content().strip()
-        rating = re.search(rating_regex, text).group(1)
-    except Exception as e:
-        print(f"Error: {e}")
-        rating = "Not found"
+    class CompanyDetails(BaseModel):
+        """ Company details """
 
-    return rating
+        company_name: Optional[str] = Field(description="Company Name")
+        industry_name: Optional[str] = Field(description="Industry Name")
+        year: Optional[int] = Field(description="Reporting Year")
+        esg_type: Optional[str] = Field(description="Type of ESG (Environmental, Social, or Governance)")
+        esg_category: Optional[str] = Field(description="Category within ESG Type")
+        value: Optional[float] = Field(description="Value reported for the ESG parameter")
+        values_in_percentage: Optional[float] = Field(description="Values expressed in percentage")
+        yes_or_no: Optional[str] = Field(description="Indicator for Yes or No")
+        unit: Optional[str] = Field(description="Unit of Measurement (e.g., Days, Percentage, Kilolitres, Giga Joules)")
 
+    class Details(BaseModel):
+        """ Company Details """
+        company_details: List[CompanyDetails] = Field(description="Details about the company, including ESG data")
 
-def main():
-    company_name = "Signpost India"
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
-        page = browser.new_page()
-        # Define details for each website
-        websites = [
-            {
-                "name": "Glassdoor",
-                "base_url": "https://www.glassdoor.co.in/Reviews/index.htm",
-                "search_selector": "input#companyAutocomplete-companyDiscover-employerSearch",  # Update with the actual search bar selector
-                "result_selector": "ul.suggestions.down",  # Update with the actual result selector
-                "rating_selector": "p.rating-headline-average_rating__J5rIy",
-                "rating_regex": r"(\d*\.?\d*)"
-            },
-            # {
-            #     "name": "AmbitionBox",
-            #     "base_url": "https://www.ambitionbox.com/",
-            #     "search_selector": "input[placeholder='Search Companies']",  # Example selector
-            #     "result_selector": "a[class='company-result']",  # Example selector
-            #     "rating_selector": "div.rating_text.rating_text--md",
-            #     "rating_regex": r"(\d*\.?\d*)"
-            # },
-            # Add more sites as needed
-        ]
-
-        ratings = {"Company Name": company_name}
-        for site in websites:
-            print(f"Fetching rating from {site['name']}...")
-            rating = search_and_get_rating(
-                page=page,
-                base_url=site["base_url"],
-                search_selector=site["search_selector"],
-                query=company_name,
-                result_selector=site["result_selector"],
-                rating_selector=site["rating_selector"],
-                rating_regex=site["rating_regex"]
-            )
-            ratings[site["name"]] = rating
-
-        browser.close()
-
-        # Save ratings to an Excel file
-        df = pd.DataFrame([ratings])
-        df.to_excel("ratings.xlsx", index=False)
-        print("Ratings saved to ratings.xlsx")
+    details = extract_pydantic_data(Details, prompt, ' '.join(doc_text))
+    return details
 
 
-if __name__ == "__main__":
-    main()
+def extract_pydantic_data(model, prompt, text, llm=llm):
+    program = LLMTextCompletionProgram.from_defaults(
+        output_cls=model,
+        llm=llm,
+        prompt=prompt,
+        verbose=True,
+    )
+    output = program(text=text)
+    details = output.model_dump()
+    return details
+
+
+
+# Load PDF, extract text, and get details
+pdf_path = '../BRSR/indiaNippon_BRSR.pdf'
+cleaned_text = extract_clean_text_from_pdf(pdf_path)
+details = get_company_details(cleaned_text)
+
+print(details)
+df = pd.DataFrame(details['company_details'])
+
+df.to_excel('Signpost_India_Ltd_BRSR.xlsx', index=False)

@@ -73,11 +73,6 @@ def brand(glassdoor_link, ambitionBox_link, justDial_link, crisil_link, ticker_l
         browser = p.chromium.launch(headless=False)
         page = browser.new_page()
         print("Collecting all Ratings data")
-        # glassdoor_link = 'https://www.glassdoor.co.in/Overview/Working-at-Signpost-India-EI_IE2372115.11,25.htm'
-        # ambitionBox_link = 'https://www.ambitionbox.com/reviews/signpost-india-reviews'
-        # justDial_link ='https://www.justdial.com/jdmart/Mumbai/Signpost-India-Pvt-Ltd-Registered-Office-Near-Santacruz-Airport-Terminal-Vile-Parle-East/022PXX22-XX22-181127114814-B8L6_BZDET/catalogue'
-        # crisil_link = 'https://www.crisilratings.com/en/home/our-business/ratings/company-factsheet.CTODAL.html'
-        # ticker_link = 'https://ticker.finology.in/company/SIGNPOST'
         rating = dict()
 
         rating['glassdoor'] = find_glassdoorRating(page, glassdoor_link)
@@ -86,13 +81,12 @@ def brand(glassdoor_link, ambitionBox_link, justDial_link, crisil_link, ticker_l
         rating['crisil'] = find_crisilRating(page, crisil_link)
         rating['ticker'] = find_tickerRating(page, ticker_link)
         browser.close()
-        print(rating)
         keys = list(rating.keys())
         values = list(rating.values())
 
         # Creating the DataFrame with keys in 'Entity' and values in 'Value'
-        df = pd.DataFrame({'Rating Source': keys, 'Rating': values})
-        excel_path = '../Excel Files/pdfData.xlsx'
+        df = pd.DataFrame({'Company Name': company_name, 'Industry Name': industry_name, 'Rating Source': keys, 'Rating': values})
+        excel_path = '../ExcelFiles/pdfData.xlsx'
         try:
             # Load existing data from the worksheet
             with pd.ExcelFile(excel_path, engine='openpyxl') as excel_file:
