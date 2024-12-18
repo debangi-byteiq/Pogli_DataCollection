@@ -42,11 +42,9 @@ def extract_pydantic_data(model, prompt, text,llm=llm):
 
 
 def products(product_list):
-    # product_list = ['Wireless front end', 'Satellite Communication', 'Embedded systems', 'Signal Processing', 'Network management', 'Software development']
     keys = list()
     values = list()
     for each in product_list:
-        print(each)
         description = get_description(each)
         print(f"{each}: {description['description']}")
         keys.append(each)
@@ -78,8 +76,12 @@ def products(product_list):
 
 
 def main():
-    product_list = ['Wireless front end', 'Satellite Communication', 'Embedded systems', 'Signal Processing', 'Network management', 'Software development']
+    product_list = ['DOOH billboards', 'Digital bus queue shelters', 'Hybrid mobility solutions (e-bikes)',
+                    'Traffic surveillance booths', 'Street accessible libraries', 'Ad-tech solutions (Captura)',
+                    'Geospatial data based media planning', 'Campaign footfall ROI mapping']
+    # product_list = ['Wireless front end', 'Satellite Communication', 'Embedded systems', 'Signal Processing', 'Network management', 'Software development']
     products(product_list)
+
 
 if __name__ == '__main__':
     main()
