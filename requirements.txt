@@ -1,0 +1,11 @@
+pandas~=2.2.1
+pydantic~=2.9.2
+playwright~=1.44.0
+beautifulsoup4~=4.12.3
+DateTime~=5.5
+requests~=2.31.0
+fitz
+pymupdf
+llama-index
+llama-index-llms-gemini
+typing

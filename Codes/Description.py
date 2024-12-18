@@ -41,47 +41,41 @@ def extract_pydantic_data(model, prompt, text,llm=llm):
     return details
 
 
-def products(product_list):
+def products(product_list, company_name, industry_name):
     keys = list()
     values = list()
     for each in product_list:
         description = get_description(each)
-        print(f"{each}: {description['description']}")
+        # print(f"{each}: {description['description']}")
         keys.append(each)
         values.append(description['description'])
 
     # Creating the DataFrame with keys in 'Entity' and values in 'Value'
     df = pd.DataFrame({'Products': keys, 'Description': values})
+    df['company_name'] = company_name
+    df['industry_name'] = industry_name
     excel_path = '../Excel Files/pdfData.xlsx'
-    product_combined = pd.DataFrame()
     try:
-        # Attempt to read the existing worksheet
+        # Load existing data from the worksheet
         with pd.ExcelFile(excel_path, engine='openpyxl') as excel_file:
             if 'Company Products' in excel_file.sheet_names:
+                # Read existing data
                 product_data_existing = pd.read_excel(excel_path, sheet_name='Company Products', engine='openpyxl')
-                # Combine existing and new data
+                # Combine existing data with new data
                 product_combined = pd.concat([product_data_existing, df], ignore_index=True)
             else:
-                # If the sheet doesn't exist, initialize combined data with new data
+                # If the worksheet doesn't exist, initialize combined data with new data
                 product_combined = df
 
-        # Write combined data back to Excel
-        with pd.ExcelWriter(excel_path, engine='openpyxl', mode='a') as writer:
+        # Write the combined data back to the same worksheet
+        with pd.ExcelWriter(excel_path, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
             product_combined.to_excel(writer, sheet_name='Company Products', index=False)
 
     except FileNotFoundError:
-        # If the file itself doesn't exist, create it
+        # If the file itself doesn't exist, create it and write the data
         with pd.ExcelWriter(excel_path, engine='openpyxl', mode='w') as writer:
             df.to_excel(writer, sheet_name='Company Products', index=False)
 
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
-def main():
-    product_list = ['DOOH billboards', 'Digital bus queue shelters', 'Hybrid mobility solutions (e-bikes)',
-                    'Traffic surveillance booths', 'Street accessible libraries', 'Ad-tech solutions (Captura)',
-                    'Geospatial data based media planning', 'Campaign footfall ROI mapping']
-    # product_list = ['Wireless front end', 'Satellite Communication', 'Embedded systems', 'Signal Processing', 'Network management', 'Software development']
-    products(product_list)
-
-
-if __name__ == '__main__':
-    main()

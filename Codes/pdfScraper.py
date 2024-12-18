@@ -176,6 +176,8 @@ def update_existing_excel(annualReport_data, BRSR_data, excel_path):
 
 def main():
     warnings.filterwarnings("ignore")
+    company_name = ''
+    industry_name = ''
     annual_reports_path = "../AnnualReports/Avantl_AnnualReports.pdf"
     brsr_path = "../BRSR/indiaNippon_BRSR.pdf"
     excel_path = "../Excel Files/pdfData.xlsx"
@@ -200,10 +202,10 @@ def main():
     update_existing_excel(annual_report_details['company_details'], brsr_details['company_details'], excel_path)
 
     # Scraping brand data
-    brand(glassdoor_link, ambitionBox_link, justDial_link, crisil_link, ticker_link)
+    brand(glassdoor_link, ambitionBox_link, justDial_link, crisil_link, ticker_link, company_name, industry_name)
 
     # Scraping product data
-    products(product_list)
+    products(product_list, company_name, industry_name)
 
 
 

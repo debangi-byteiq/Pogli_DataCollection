@@ -68,7 +68,7 @@ def find_ambitionBoxRating(page, link):
     return rating
 
 
-def brand(glassdoor_link, ambitionBox_link, justDial_link, crisil_link, ticker_link):
+def brand(glassdoor_link, ambitionBox_link, justDial_link, crisil_link, ticker_link, company_name, industry_name):
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
         page = browser.new_page()
@@ -93,19 +93,26 @@ def brand(glassdoor_link, ambitionBox_link, justDial_link, crisil_link, ticker_l
         # Creating the DataFrame with keys in 'Entity' and values in 'Value'
         df = pd.DataFrame({'Rating Source': keys, 'Rating': values})
         excel_path = '../Excel Files/pdfData.xlsx'
-        brand_combined = pd.DataFrame()
         try:
-            brand_combined = pd.concat([brand_combined, df], ignore_index=True)
-            with pd.ExcelFile(excel_path) as writer:
-                # Read existing data from sheets
-                brand_data_existing = pd.read_excel(excel_path, sheet_name='Company Brand', engine='openpyxl')
-                brand_combined = pd.concat([brand_data_existing, brand_combined], ignore_index=True)
+            # Load existing data from the worksheet
+            with pd.ExcelFile(excel_path, engine='openpyxl') as excel_file:
+                if 'Company f' in excel_file.sheet_names:
+                    # Read existing data
+                    brand_data_existing = pd.read_excel(excel_path, sheet_name='Company Products', engine='openpyxl')
+                    # Combine existing data with new data
+                    brand_combined = pd.concat([brand_data_existing, df], ignore_index=True)
+                else:
+                    # If the worksheet doesn't exist, initialize combined data with new data
+                    brand_combined = df
+
+            # Write the combined data back to the same worksheet
+            with pd.ExcelWriter(excel_path, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
                 brand_combined.to_excel(writer, sheet_name='Company Brand', index=False)
+
         except FileNotFoundError:
-            brand_new = pd.DataFrame(df)
-            # Create a new Excel file if it doesn't exist
+            # If the file itself doesn't exist, create it and write the data
             with pd.ExcelWriter(excel_path, engine='openpyxl', mode='w') as writer:
-                brand_new.to_excel(writer, sheet_name='Company Brand', index=False)
+                df.to_excel(writer, sheet_name='Company Brand', index=False)
+
         except Exception as e:
             print(f"An error occurred: {e}")
-
