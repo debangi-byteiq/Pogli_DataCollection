@@ -26,6 +26,7 @@ def get_company_info(company_name):
     response = program(text="")
     response_text = response.text
     info = response_text
+    print(info)
 
     # # Improved text parsing using regular expressions
     # info = {}
