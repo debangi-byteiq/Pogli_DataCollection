@@ -29,8 +29,8 @@ def annualReport_details(doc_text):
 
     class CompanyDetails(BaseModel):
         """ Company details """
-        company_name: Optional[str] = Field(description="Company Name")
-        industry_name: Optional[str] = Field(description="Industry Name")
+        # company_name: Optional[str] = Field(description="Company Name")
+        # industry_name: Optional[str] = Field(description="Industry Name")
         cin: Optional[str] = Field(description="CIN (Corporate Identification Number)")
         registered_office_address: Optional[str] = Field(description="Registered Office Address")
         international_operating_centers: Optional[List[str]] = Field(description="List of International Operating Centers")
@@ -60,7 +60,7 @@ def annualReport_details(doc_text):
         website_link: Optional[str] = Field(description="Website Link")
         country_name: Optional[str] = Field(description="Country Name")
         products: Optional[list] = Field(description="List of Products or services offered by the company")
-        customers: Optional[list] = Field(description="List of Customers of the Company")
+        customers: Optional[list] = Field(description="List of brands or the companies that are customers of the Company")
         operating_sites: Optional[list] = Field(description="List of Operating sites or the locations from which the company operates")
 
     class Details(BaseModel):
@@ -75,7 +75,7 @@ def BRSR_details(doc_text):
     prompt = PromptTemplate(
         """
         You are an expert assistant for extracting company information from documents in JSON format.
-        Extract the data carefully by analyzing and understanding the provided document.
+        Extract all the data carefully by analyzing and understanding the provided document for the current year and the previous year.
         REMEMBER to return extracted data only from the provided context.
         CONTEXT:
         {text}
@@ -85,8 +85,8 @@ def BRSR_details(doc_text):
     class CompanyDetails(BaseModel):
         """ Company details """
 
-        company_name: Optional[str] = Field(description="Company Name")
-        industry_name: Optional[str] = Field(description="Industry Name")
+        # company_name: Optional[str] = Field(description="Company Name")
+        # industry_name: Optional[str] = Field(description="Industry Name")
         year: Optional[int] = Field(description="Reporting Year")
         esg_type: Optional[str] = Field(description="Type of ESG (Environmental, Social, or Governance)")
         esg_category: Optional[str] = Field(description="Category within ESG Type")
@@ -140,28 +140,31 @@ def update_existing_excel(annualReport_data, BRSR_data, excel_path, company_name
         None
     """
     print("Appending data to Excel")
-    print(BRSR_data)
+    # add_data = {'Company Name': company_name, 'Industry Name': industry_name}
+    # annualReport_data = {**add_data, **annualReport_data}
+    # BRSR_data = {**add_data, **BRSR_data}
+    annual_report_new = pd.DataFrame([annualReport_data])
+    brsr_new = pd.DataFrame(BRSR_data)
+
+    # Add new columns with constant values
+    annual_report_new['Company Name'],  brsr_new['Company Name'] = company_name, company_name
+    annual_report_new['Industry Name'], brsr_new['Industry Name'] = industry_name, industry_name
+
+    annual_report_new = annual_report_new[['Company Name', 'Industry Name'] + [col for col in annual_report_new.columns if col not in ['Company Name', 'Industry Name']]]
+    brsr_new = brsr_new[['Company Name', 'Industry Name'] + [col for col in brsr_new.columns if col not in ['Company Name', 'Industry Name']]]
     try:
         # Try to read the existing file
         annual_report_data_existing = pd.read_excel(excel_path, sheet_name='Company Details', engine='openpyxl')
         brsr_data_existing = pd.read_excel(excel_path, sheet_name='Company ESG', engine='openpyxl')
-        # Convert the new data into a DataFrame
-        annual_report_new = pd.DataFrame([annualReport_data])
-        brsr_new = pd.DataFrame([BRSR_data])
-        annual_report_new['Company Name'], brsr_new['Company Name'] = company_name
-        annual_report_new['Industry Name'], brsr_new['Industry Name'] = industry_name
         # Append the new data to the existing DataFrame
         annual_report_combined = pd.concat([annual_report_data_existing, annual_report_new], ignore_index=True)
         brsr_combined = pd.concat([brsr_data_existing, brsr_new], ignore_index=True)
         # Save the combined DataFrame back to the same sheet
-        with pd.ExcelWriter(excel_path, engine='openpyxl', mode='w') as writer:
+        with pd.ExcelWriter(excel_path, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
             annual_report_combined.to_excel(writer, sheet_name='Company Details', index=False)
             brsr_combined.to_excel(writer, sheet_name='Company ESG', index=False)
     except FileNotFoundError:
         print(f"Excel file not found: {excel_path}. Creating a new file.")
-        # If the file doesn't exist, create a new DataFrame with the data
-        annual_report_new = pd.DataFrame([annualReport_data])
-        brsr_new = pd.DataFrame([BRSR_data])
         # Save the DataFrame to a new Excel file
         with pd.ExcelWriter(excel_path, engine='openpyxl', mode='w') as writer:
             annual_report_new.to_excel(writer, sheet_name='Company Details', index=False)
@@ -172,30 +175,31 @@ def update_existing_excel(annualReport_data, BRSR_data, excel_path, company_name
 
 def main():
     warnings.filterwarnings("ignore")
-    company_name = ''
-    industry_name = ''
-    annual_reports_path = "../AnnualReports/india nippon.pdf"
-    brsr_path = "../BRSR/indiaNippon_BRSR.pdf"
+    company_name = 'Signpost India'
+    industry_name = 'Electrodes & Refractories'
+    annual_reports_path = "../AnnualReports/Signpost_AnnualReport.pdf"
+    brsr_path = "../BRSR/Signpost_BRSR.pdf"
     excel_path = "../ExcelFiles/pdfData.xlsx"
-    glassdoor_link = 'https://www.glassdoor.co.in/Overview/Working-at-Signpost-India-EI_IE2372115.11,25.htm'
-    ambitionBox_link = 'https://www.ambitionbox.com/reviews/signpost-india-reviews'
-    justDial_link = 'https://www.justdial.com/jdmart/Mumbai/Signpost-India-Pvt-Ltd-Registered-Office-Near-Santacruz-Airport-Terminal-Vile-Parle-East/022PXX22-XX22-181127114814-B8L6_BZDET/catalogue'
-    crisil_link = 'https://www.crisilratings.com/en/home/our-business/ratings/company-factsheet.CTODAL.html'
-    ticker_link = 'https://ticker.finology.in/company/SIGNPOST'
+    # glassdoor_link = 'https://www.glassdoor.co.in/Overview/Working-at-Signpost-India-EI_IE2372115.11,25.htm'
+    # ambitionBox_link = 'https://www.ambitionbox.com/reviews/signpost-india-reviews'
+    # justDial_link = 'https://www.justdial.com/jdmart/Mumbai/Signpost-India-Pvt-Ltd-Registered-Office-Near-Santacruz-Airport-Terminal-Vile-Parle-East/022PXX22-XX22-181127114814-B8L6_BZDET/catalogue'
+    # crisil_link = 'https://www.crisilratings.com/en/home/our-business/ratings/company-factsheet.CTODAL.html'
+    # ticker_link = 'https://ticker.finology.in/company/SIGNPOST'
 
     print("Starting Annual Reports Scraper")
     annual_report_text = extract_clean_text_from_pdf(annual_reports_path)
-    # Extract company details
     annual_report_details = annualReport_details(annual_report_text)
+
 
     print("Starting BRSR Scraper")
     brsr_text = extract_clean_text_from_pdf(brsr_path)
     brsr_details = BRSR_details(brsr_text)
 
+
     update_existing_excel(annual_report_details['company_details'], brsr_details['company_details'], excel_path, company_name, industry_name)
 
-    # Scraping brand data
-    brand(glassdoor_link, ambitionBox_link, justDial_link, crisil_link, ticker_link, company_name, industry_name)
+    # # Scraping brand data
+    # brand(glassdoor_link, ambitionBox_link, justDial_link, crisil_link, ticker_link, company_name, industry_name)
 
     # Scraping product data
     print("Collecting product data")

@@ -52,23 +52,24 @@ def products(product_list, company_name, industry_name):
 
         # Creating the DataFrame with keys in 'Entity' and values in 'Value'
         df = pd.DataFrame({'Company Name': company_name, 'Industry Name': industry_name,'Products': keys, 'Description': values})
-        df['company_name'] = company_name
-        df['industry_name'] = industry_name
         excel_path = '../ExcelFiles/pdfData.xlsx'
         try:
             # Load existing data from the worksheet
             with pd.ExcelFile(excel_path, engine='openpyxl') as excel_file:
                 if 'Company Products' in excel_file.sheet_names:
                     # Read existing data
-                    product_data_existing = pd.read_excel(excel_path, sheet_name='Company Products', engine='openpyxl')
+                    product_data_existing = pd.read_excel(excel_path, sheet_name='Company Products',
+                                                           engine='openpyxl')
+                    # print(product_data_existing)
                     # Combine existing data with new data
                     product_combined = pd.concat([product_data_existing, df], ignore_index=True)
+                    # print(product_combined)
                 else:
                     # If the worksheet doesn't exist, initialize combined data with new data
                     product_combined = df
 
             # Write the combined data back to the same worksheet
-            with pd.ExcelWriter(excel_path, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
+            with pd.ExcelWriter(excel_path, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
                 product_combined.to_excel(writer, sheet_name='Company Products', index=False)
 
         except FileNotFoundError:
@@ -79,5 +80,5 @@ def products(product_list, company_name, industry_name):
         except Exception as e:
             print(f"An error occurred: {e}")
     else:
-        print("No products found")
+        print('No products found')
 

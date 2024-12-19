@@ -82,34 +82,32 @@ def customers(customer, company_name, industry_name):
             ann_rev.append(company_info.annual_revenue)
             quart_rev.append(company_info.quarterly_revenue)
             sector.append(company_info.sector)
-            df = pd.DataFrame({'Company Name': company_name, 'Industry Name': industry_name,'Customer': keys, 'Foundation Year': foundation_year, 'Annual Revenue': ann_rev,
-                               'Quarterly Revenue': quart_rev, 'Sector': sector})
-            df['company_name'] = company_name
-            df['industry_name'] = industry_name
-            excel_path = '../ExcelFiles/pdfData.xlsx'
-            try:
-                # Load existing data from the worksheet
-                with pd.ExcelFile(excel_path, engine='openpyxl') as excel_file:
-                    if 'Company Customers' in excel_file.sheet_names:
-                        # Read existing data
-                        customer_data_existing = pd.read_excel(excel_path, sheet_name='Company Customers', engine='openpyxl')
-                        # Combine existing data with new data
-                        customer_combined = pd.concat([customer_data_existing, df], ignore_index=True)
-                    else:
-                        # If the worksheet doesn't exist, initialize combined data with new data
-                        customer_combined = df
+        df = pd.DataFrame({'Company Name': company_name, 'Industry Name': industry_name,'Customer': keys, 'Foundation Year': foundation_year, 'Annual Revenue': ann_rev,
+                           'Quarterly Revenue': quart_rev, 'Sector': sector})
+        excel_path = '../ExcelFiles/pdfData.xlsx'
+        try:
+            # Load existing data from the worksheet
+            with pd.ExcelFile(excel_path, engine='openpyxl') as excel_file:
+                if 'Company Customers' in excel_file.sheet_names:
+                    # Read existing data
+                    customer_data_existing = pd.read_excel(excel_path, sheet_name='Company Customers', engine='openpyxl')
+                    # Combine existing data with new data
+                    customer_combined = pd.concat([customer_data_existing, df], ignore_index=True)
+                else:
+                    # If the worksheet doesn't exist, initialize combined data with new data
+                    customer_combined = df
 
-                # Write the combined data back to the same worksheet
-                with pd.ExcelWriter(excel_path, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
-                    customer_combined.to_excel(writer, sheet_name='Company Customers', index=False)
+            # Write the combined data back to the same worksheet
+            with pd.ExcelWriter(excel_path, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
+                customer_combined.to_excel(writer, sheet_name='Company Customers', index=False)
 
-            except FileNotFoundError:
-                # If the file itself doesn't exist, create it and write the data
-                with pd.ExcelWriter(excel_path, engine='openpyxl', mode='w') as writer:
-                    df.to_excel(writer, sheet_name='Company Customers', index=False)
+        except FileNotFoundError:
+            # If the file itself doesn't exist, create it and write the data
+            with pd.ExcelWriter(excel_path, engine='openpyxl', mode='w') as writer:
+                df.to_excel(writer, sheet_name='Company Customers', index=False)
 
-            except Exception as e:
-                print(f"An error occurred: {e}")
+        except Exception as e:
+            print(f"An error occurred: {e}")
     else:
         print('No customers found')
 
