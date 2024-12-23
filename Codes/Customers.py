@@ -13,11 +13,11 @@ class CompanyInfo(BaseModel):
         default=None
     )
     annual_revenue: Optional[str] = Field(
-        description="Average annual revenue in USD",
+        description="Average annual revenue in INR",
         default=None
     )
     quarterly_revenue: Optional[str] = Field(
-        description="Average quarterly revenue in USD",
+        description="Average quarterly revenue in INR",
         default=None
     )
     sector: Optional[str] = Field(
@@ -56,8 +56,8 @@ def get_company_info(company_names: List[str]) -> List[dict]:
         f"{output_parser.get_format_string()}\n\n"
         "Please include:\n"
         "- Approximate year of foundation\n"
-        "- Average annual revenue range (e.g., $10M-$20M)\n"
-        "- Average quarterly revenue range (e.g., $2.5M-$5M)\n"
+        "- Average annual revenue range (e.g., 100000-200000)\n"
+        "- Average quarterly revenue range (e.g., 259079-345726)\n"
         "- Primary industry sector\n"
         "Do NOT provide real-time or constantly changing financial data. Use approximate or typical values."
     )
