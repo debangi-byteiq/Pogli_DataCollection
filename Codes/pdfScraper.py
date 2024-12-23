@@ -8,12 +8,23 @@ from llama_index.core.program import LLMTextCompletionProgram
 from typing import Optional, List
 from pydantic import Field, BaseModel
 import os
-from BrandRatings import brand
+import json
+import time
+from pydantic import ValidationError
 from Description import products
 from Customers import customers
+from dotenv import load_dotenv
 
-os.environ["GOOGLE_API_KEY"] = "AIzaSyAjP37AbKfS7gHyy72DkQDXckP5FBIRwto"
-llm = Gemini()
+load_dotenv()
+llm = Gemini(
+    model="models/gemini-1.0-pro",
+    api_key=os.getenv('GOOGLE_API_KEY'),
+)
+
+llm1 = Gemini(
+    model="models/gemini-1.5-flash-latest",
+    api_key = os.getenv('GOOGLE_API_KEY_1')
+)
 
 def annualReport_details(doc_text):
     prompt = PromptTemplate(
@@ -29,13 +40,13 @@ def annualReport_details(doc_text):
 
     class CompanyDetails(BaseModel):
         """ Company details """
-        # company_name: Optional[str] = Field(description="Company Name")
-        # industry_name: Optional[str] = Field(description="Industry Name")
+
         cin: Optional[str] = Field(description="CIN (Corporate Identification Number)")
         registered_office_address: Optional[str] = Field(description="Registered Office Address")
-        international_operating_centers: Optional[List[str]] = Field(description="List of International Operating Centers")
         national_operating_centers: Optional[List[str]] = Field(description="List of National Operating Centers")
+        international_operating_centers: Optional[List[str]] = Field(description="List of International Operating Centers")
         corporate_address: Optional[str] = Field(description="Corporate Address")
+        country_name: Optional[str] = Field(description="Country Name")
         stock_exchange_listed: Optional[str] = Field(description="Is the company listed on stock exchange?")
         paid_up_share_capital: Optional[str] = Field(description="Paid-up Share Capital")
         assurance_provider: Optional[str] = Field(description="Assurance Provider")
@@ -58,9 +69,8 @@ def annualReport_details(doc_text):
         complaints_pending: Optional[str] = Field(description="Complaints Pending")
         days_of_account_payable: Optional[str] = Field(description="Days of Account Payable")
         website_link: Optional[str] = Field(description="Website Link")
-        country_name: Optional[str] = Field(description="Country Name")
         products: Optional[list] = Field(description="List of Products or services offered by the company")
-        customers: Optional[list] = Field(description="List of brands or the companies that are customers of the Company")
+        customers: Optional[list] = Field(description="List of brand names or the company names that take services from this company or are the customers to this company")
         operating_sites: Optional[list] = Field(description="List of Operating sites or the locations from which the company operates")
 
     class Details(BaseModel):
@@ -85,8 +95,6 @@ def BRSR_details(doc_text):
     class CompanyDetails(BaseModel):
         """ Company details """
 
-        # company_name: Optional[str] = Field(description="Company Name")
-        # industry_name: Optional[str] = Field(description="Industry Name")
         year: Optional[int] = Field(description="Reporting Year")
         esg_type: Optional[str] = Field(description="Type of ESG (Environmental, Social, or Governance)")
         esg_category: Optional[str] = Field(description="Category within ESG Type")
@@ -103,7 +111,7 @@ def BRSR_details(doc_text):
     return details
 
 
-def extract_pydantic_data(model, prompt, text, llm=llm):
+def extract_pydantic_data(model, prompt, text, llm=llm1):
     program = LLMTextCompletionProgram.from_defaults(
         output_cls=model,
         llm=llm,
@@ -126,89 +134,69 @@ def extract_clean_text_from_pdf(pdf_path):
     return clean_text
 
 
-def update_existing_excel(annualReport_data, BRSR_data, excel_path, company_name, industry_name):
+def update_existing_excel(pdf_data, sheet_name, excel_path, company_name, industry_name):
     """
     This function appends data to an existing Excel sheet named "Company Details".
     If the file doesn't exist, it creates a new file with the data.
 
     Args:
-        annualReport_data (dict): The data from annual reports to append, in the format {key: value}.
-        BRSR_data (dict): The data from BRSR Report to append, in the format {key: value}.
+        pdf_data (dict): The data from annual reports to append, in the format {key: value}.
+        sheet_name (str): The name of the sheet in the excel to which the dta is to be stored.
         excel_path (str): The path to the existing Excel file.
 
     Returns:
         None
     """
     print("Appending data to Excel")
-    # add_data = {'Company Name': company_name, 'Industry Name': industry_name}
-    # annualReport_data = {**add_data, **annualReport_data}
-    # BRSR_data = {**add_data, **BRSR_data}
-    annual_report_new = pd.DataFrame([annualReport_data])
-    brsr_new = pd.DataFrame(BRSR_data)
+    data_new = pd.DataFrame([pdf_data])
 
     # Add new columns with constant values
-    annual_report_new['Company Name'],  brsr_new['Company Name'] = company_name, company_name
-    annual_report_new['Industry Name'], brsr_new['Industry Name'] = industry_name, industry_name
-
-    annual_report_new = annual_report_new[['Company Name', 'Industry Name'] + [col for col in annual_report_new.columns if col not in ['Company Name', 'Industry Name']]]
-    brsr_new = brsr_new[['Company Name', 'Industry Name'] + [col for col in brsr_new.columns if col not in ['Company Name', 'Industry Name']]]
+    data_new['Company Name'],  data_new['Industry Name'] = company_name, industry_name
+    data_new = data_new[['Company Name', 'Industry Name'] + [col for col in data_new.columns if col not in ['Company Name', 'Industry Name']]]
     try:
         # Try to read the existing file
-        annual_report_data_existing = pd.read_excel(excel_path, sheet_name='Company Details', engine='openpyxl')
-        brsr_data_existing = pd.read_excel(excel_path, sheet_name='Company ESG', engine='openpyxl')
+        data_existing = pd.read_excel(excel_path, sheet_name=sheet_name, engine='openpyxl')
         # Append the new data to the existing DataFrame
-        annual_report_combined = pd.concat([annual_report_data_existing, annual_report_new], ignore_index=True)
-        brsr_combined = pd.concat([brsr_data_existing, brsr_new], ignore_index=True)
+        data_combined = pd.concat([data_existing, data_new], ignore_index=True)
         # Save the combined DataFrame back to the same sheet
         with pd.ExcelWriter(excel_path, engine='openpyxl', mode='a', if_sheet_exists='overlay') as writer:
-            annual_report_combined.to_excel(writer, sheet_name='Company Details', index=False)
-            brsr_combined.to_excel(writer, sheet_name='Company ESG', index=False)
+            data_combined.to_excel(writer, sheet_name=sheet_name, index=False)
     except FileNotFoundError:
         print(f"Excel file not found: {excel_path}. Creating a new file.")
         # Save the DataFrame to a new Excel file
         with pd.ExcelWriter(excel_path, engine='openpyxl', mode='w') as writer:
-            annual_report_new.to_excel(writer, sheet_name='Company Details', index=False)
-            brsr_new.to_excel(writer, sheet_name='Company ESG', index=False)
+            data_new.to_excel(writer, sheet_name=sheet_name, index=False)
     except Exception as e:
         print(f"An error occurred: {e}")
 
 
 def main():
     warnings.filterwarnings("ignore")
-    company_name = 'Signpost India'
-    industry_name = 'Electrodes & Refractories'
-    annual_reports_path = "../AnnualReports/Signpost_AnnualReport.pdf"
-    brsr_path = "../BRSR/Signpost_BRSR.pdf"
+    company_name = 'EVEREST KANTO CYLINDER LTD'
+    industry_name = 'Industrial Products'
+    annual_reports_path = "../AnnualReports/EverestKanto_AnnualReport.pdf"
+    brsr_path = "../BRSR/Thyrocare_BRSR.pdf"
     excel_path = "../ExcelFiles/pdfData.xlsx"
-    # glassdoor_link = 'https://www.glassdoor.co.in/Overview/Working-at-Signpost-India-EI_IE2372115.11,25.htm'
-    # ambitionBox_link = 'https://www.ambitionbox.com/reviews/signpost-india-reviews'
-    # justDial_link = 'https://www.justdial.com/jdmart/Mumbai/Signpost-India-Pvt-Ltd-Registered-Office-Near-Santacruz-Airport-Terminal-Vile-Parle-East/022PXX22-XX22-181127114814-B8L6_BZDET/catalogue'
-    # crisil_link = 'https://www.crisilratings.com/en/home/our-business/ratings/company-factsheet.CTODAL.html'
-    # ticker_link = 'https://ticker.finology.in/company/SIGNPOST'
 
     print("Starting Annual Reports Scraper")
     annual_report_text = extract_clean_text_from_pdf(annual_reports_path)
     annual_report_details = annualReport_details(annual_report_text)
-
-
-    print("Starting BRSR Scraper")
-    brsr_text = extract_clean_text_from_pdf(brsr_path)
-    brsr_details = BRSR_details(brsr_text)
-
-
-    update_existing_excel(annual_report_details['company_details'], brsr_details['company_details'], excel_path, company_name, industry_name)
-
-    # # Scraping brand data
-    # brand(glassdoor_link, ambitionBox_link, justDial_link, crisil_link, ticker_link, company_name, industry_name)
+    update_existing_excel(annual_report_details['company_details'], 'Company Details', excel_path, company_name, industry_name)
+    product = annual_report_details['company_details']['products']
+    customer = annual_report_details['company_details']['customers']
 
     # Scraping product data
     print("Collecting product data")
-    products(annual_report_details['company_details']['products'], company_name, industry_name)
+    products(product, company_name, industry_name)
 
     # Scraping Cutomers data
     print("Collecting customer data")
-    customers(annual_report_details['company_details']['customers'], company_name, industry_name)
+    customers(customer, company_name, industry_name)
 
+    # print("Starting BRSR Scraper")
+    # brsr_text = extract_clean_text_from_pdf(brsr_path)
+    # brsr_details = BRSR_details(brsr_text)
+    # update_existing_excel(brsr_details['company_details'], 'Company ESG', excel_path, company_name, industry_name)
 
 
 
