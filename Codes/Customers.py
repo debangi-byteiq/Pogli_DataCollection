@@ -12,18 +12,19 @@ class CompanyInfo(BaseModel):
         description="The year the company was founded",
         default=None
     )
-    annual_revenue: Optional[str] = Field(
-        description="Average annual revenue in INR",
-        default=None
-    )
-    quarterly_revenue: Optional[str] = Field(
-        description="Average quarterly revenue in INR",
-        default=None
-    )
     sector: Optional[str] = Field(
         description="Primary industry sector of the company",
         default=None
     )
+    annual_revenue: Optional[str] = Field(
+        description="Approximate Average annual revenue in INR Cr of recent year from google finance",
+        default=None
+    )
+    quarterly_revenue: Optional[str] = Field(
+        description="Approximate quarterly revenue in INR Cr of recent quarter from google finance",
+        default=None
+    )
+
 
     class Config:
         # Allow extra fields to be more flexible
@@ -50,15 +51,15 @@ def get_company_info(company_names: List[str]) -> List[dict]:
     # Adjusted prompt to request information for all companies in the list
     company_list_text = "\n".join([f"- {name}" for name in company_names])
     prompt_text = (
-        f"Provide general, estimated information about the following companies:\n\n"
+        f"Provide general, estimated information about the following companies from google finance data :\n\n"
         f"{company_list_text}\n\n"
         "You MUST respond in the following JSON format:\n"
         f"{output_parser.get_format_string()}\n\n"
         "Please include:\n"
         "- Approximate year of foundation\n"
-        "- Average annual revenue range (e.g., 100000-200000)\n"
-        "- Average quarterly revenue range (e.g., 259079-345726)\n"
         "- Primary industry sector\n"
+        "- Approximate Annual revenue in INR cr(e.g., 259.89cr) of recent year\n"
+        "- Approximate Quarterly revenue in INR cr(e.g., 345.26cr) of recent quarter\n"
         "Do NOT provide real-time or constantly changing financial data. Use approximate or typical values."
     )
 
@@ -78,7 +79,7 @@ def get_company_info(company_names: List[str]) -> List[dict]:
         return []  # Return an empty list on failure
 
 
-def customers(customer: List[str], company_name: str, industry_name: str):
+def customers(customer: List[str], company_name, industry_name):
     """
     Process a list of customers, fetch their information in one API call, and save it to an Excel file.
     """
@@ -88,6 +89,7 @@ def customers(customer: List[str], company_name: str, industry_name: str):
 
     # Fetch company information in a batch
     company_info_list = get_company_info(customer)
+    print(company_info_list)
 
     if not company_info_list:
         print("Failed to retrieve company information.")
@@ -99,13 +101,13 @@ def customers(customer: List[str], company_name: str, industry_name: str):
         'Industry Name': industry_name,
         'Customer': customer,
         'Foundation Year': [info.get("foundation_year", "N/A") for info in company_info_list],
+        'Sector': [info.get("sector", "N/A") for info in company_info_list],
         'Annual Revenue': [info.get("annual_revenue", "N/A") for info in company_info_list],
         'Quarterly Revenue': [info.get("quarterly_revenue", "N/A") for info in company_info_list],
-        'Sector': [info.get("sector", "N/A") for info in company_info_list],
     }
     df = pd.DataFrame(data)
 
-    excel_path = '../ExcelFiles/pdfData.xlsx'
+    excel_path = '../ExcelFiles/customerData.xlsx'
     try:
         # Load existing data from the worksheet
         with pd.ExcelFile(excel_path, engine='openpyxl') as excel_file:
@@ -126,7 +128,7 @@ def customers(customer: List[str], company_name: str, industry_name: str):
         # If the file itself doesn't exist, create it and write the data
         with pd.ExcelWriter(excel_path, engine='openpyxl', mode='w') as writer:
             df.to_excel(writer, sheet_name='Company Customers', index=False)
-
     except Exception as e:
         print(f"An error occurred: {e}")
 
+customers(['KOTAK MAHINDRA PRIME LIMITED'], "Morgan", '')

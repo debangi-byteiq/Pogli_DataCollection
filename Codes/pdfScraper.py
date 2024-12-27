@@ -43,17 +43,17 @@ def annualReport_details(doc_text):
 
         cin: Optional[str] = Field(description="CIN (Corporate Identification Number)")
         registered_office_address: Optional[str] = Field(description="Registered Office Address")
-        national_operating_centers: Optional[List[str]] = Field(description="List of National Operating Centers")
-        international_operating_centers: Optional[List[str]] = Field(description="List of International Operating Centers")
+        national_operating_centers: Optional[str] = Field(description="Count of National Operating sites")
+        international_operating_centers: Optional[str] = Field(description="Count of International Operating Centers")
         corporate_address: Optional[str] = Field(description="Corporate Address")
         country_name: Optional[str] = Field(description="Country Name")
-        stock_exchange_listed: Optional[str] = Field(description="Is the company listed on stock exchange?")
+        stock_exchange_listed: Optional[str] = Field(description="Where is the company listed for stock exchange(NSE/BSE/NSE-BSE)")
         paid_up_share_capital: Optional[str] = Field(description="Paid-up Share Capital")
         assurance_provider: Optional[str] = Field(description="Assurance Provider")
         assurance_type: Optional[str] = Field(description="Assurance Type")
         csr_applicable: Optional[str] = Field(description="CSR Applicable (Yes/No)")
-        turnover: Optional[str] = Field(description="Turnover")
-        net_worth: Optional[str] = Field(description="Net Worth")
+        turnover: Optional[str] = Field(description="Turnover in INR")
+        net_worth: Optional[str] = Field(description="Net Worth in INR")
         phone_number: Optional[str] = Field(description="Phone Number of the company")
         email_id: Optional[str] = Field(description="Email ID of the company")
         founder_name: Optional[str] = Field(description="Founder Name")
@@ -172,32 +172,28 @@ def update_existing_excel(pdf_data, sheet_name, excel_path, company_name, indust
 
 def main():
     warnings.filterwarnings("ignore")
-    company_name = 'EVEREST KANTO CYLINDER LTD'
-    industry_name = 'Industrial Products'
-    annual_reports_path = "../AnnualReports/EverestKanto_AnnualReport.pdf"
-    brsr_path = "../BRSR/Thyrocare_BRSR.pdf"
+    company_name = 'Thyrocare Technologies Ltd'
+    industry_name = 'Healthcare Service Provider'
+    annual_reports_path = "../AnnualReports/Thyrocare_AnnualReport.pdf"
+    brsr_path = "../BRSR/krsnaa_AnnualReport.pdf"
     excel_path = "../ExcelFiles/pdfData.xlsx"
 
     print("Starting Annual Reports Scraper")
     annual_report_text = extract_clean_text_from_pdf(annual_reports_path)
     annual_report_details = annualReport_details(annual_report_text)
+    print(annual_report_details)
     update_existing_excel(annual_report_details['company_details'], 'Company Details', excel_path, company_name, industry_name)
     product = annual_report_details['company_details']['products']
     customer = annual_report_details['company_details']['customers']
 
-    # Scraping product data
-    print("Collecting product data")
-    products(product, company_name, industry_name)
-
-    # Scraping Cutomers data
-    print("Collecting customer data")
-    customers(customer, company_name, industry_name)
+    print(product)
+    print(customer)
 
     # print("Starting BRSR Scraper")
     # brsr_text = extract_clean_text_from_pdf(brsr_path)
     # brsr_details = BRSR_details(brsr_text)
     # update_existing_excel(brsr_details['company_details'], 'Company ESG', excel_path, company_name, industry_name)
-
+    #
 
 
 if __name__ == "__main__":

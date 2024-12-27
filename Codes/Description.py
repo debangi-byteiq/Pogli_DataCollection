@@ -3,6 +3,7 @@ from llama_index.core.prompts import PromptTemplate
 from llama_index.core.program import LLMTextCompletionProgram
 from pydantic import Field, BaseModel
 import os
+import re
 import pandas as pd
 
 os.environ["GOOGLE_API_KEY"] = "AIzaSyAjP37AbKfS7gHyy72DkQDXckP5FBIRwto"
@@ -77,18 +78,24 @@ def products(product_list, company_name, industry_name):
     try:
         # Fetch descriptions for all products in a single call
         product_descriptions = get_batch_descriptions(product_list)
+        keys = []
+        values = []
+        print(product_descriptions.values())
+        for each in product_descriptions.values():
+            keys.append(re.search(r'(.*)\s*:\s*(.*)', each).group(1))
+            values.append(re.search(r'(.*)\s*:\s*(.*)', each).group(2))
 
         # Prepare data for DataFrame
         data = {
             "Company Name": company_name,
             "Industry Name": industry_name,
-            "Products": list(product_descriptions.keys()),
-            "Description": list(product_descriptions.values()),
+            "Products": keys,
+            "Description": values,
         }
         df = pd.DataFrame(data)
 
         # Path to the Excel file
-        excel_path = "../ExcelFiles/pdfData.xlsx"
+        excel_path = "../ExcelFiles/customerData.xlsx"
 
         # Write or append the data to the Excel file
         try:
@@ -118,3 +125,6 @@ def products(product_list, company_name, industry_name):
 
     except Exception as e:
         print(f"An error occurred: {e}")
+
+products(['Thyroid testing', 'Over 920 tests', 'Her Check', 'Troponin I Heart Attack Risk Test', 'Jaanch', 'Aarogyam'
+], 'Thyrocare Technologies Ltd', 'Hospital')

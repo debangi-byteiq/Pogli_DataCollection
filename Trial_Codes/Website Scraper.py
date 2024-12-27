@@ -53,6 +53,7 @@ def get_company_details(urls):
         operating_sites: Optional[list] = Field(description="List of the Name of the sites , Location and number of employees in each operating sites")
         key_personnels: Optional[list] = Field(description="List of Key personnels in the company along with their name and designation")
 
+
     class Details(BaseModel):
         """ Company Details """
         company_details: list[CompanyDetails] = Field(description="Details about the company, including ESG data")
@@ -80,15 +81,15 @@ def main():
     #         'https://www.igarashimotors.com/index.php',
     #         'https://www.igarashimotors.com/investor-relations.php']
 
-    urls = ['https://signpostindia.com/captura/',
-            'https://signpostindia.com/about-us-who-we-are/',
-            'https://signpostindia.com/']
+    urls = ['https://www.screener.in/company/LIBERTSHOE/']
+
 
     details = get_company_details(urls)
 
     df = pd.DataFrame(details['company_details'])
     df.to_excel(f'{company_name}.xlsx', index=False)
     print(f"Details saved to {company_name}.xlsx")
+
 
 if __name__ == "__main__":
     main()
