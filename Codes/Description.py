@@ -82,8 +82,13 @@ def products(product_list, company_name, industry_name):
         values = []
         print(product_descriptions.values())
         for each in product_descriptions.values():
-            keys.append(re.search(r'(.*)\s*:\s*(.*)', each).group(1))
-            values.append(re.search(r'(.*)\s*:\s*(.*)', each).group(2))
+            print(each)
+            try:
+                keys.append(re.search(r'(.*)\s*:\s*(.*)', each).group(1))
+                values.append(re.search(r'(.*)\s*:\s*(.*)', each).group(2))
+            except:
+                keys.append(None)
+                values.append(None)
 
         # Prepare data for DataFrame
         data = {
@@ -126,5 +131,6 @@ def products(product_list, company_name, industry_name):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-products(['Thyroid testing', 'Over 920 tests', 'Her Check', 'Troponin I Heart Attack Risk Test', 'Jaanch', 'Aarogyam'
-], 'Thyrocare Technologies Ltd', 'Hospital')
+products(['centrifugal and static castings', 'heat, wear and corrosion-resistant stainless-steel alloys', 'alloy steel castings', 'reformer tubes', 'assemblies', 'radiant tubes', 'retort tubes', 'air injection tubes', 'tube support castings', 'tube sheets', 'header assemblies']
+
+, 'UNI ABEX ALLOY PRODUCTS LTD', 'Industrial Products')

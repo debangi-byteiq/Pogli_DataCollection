@@ -8,24 +8,18 @@ from llama_index.core.program import LLMTextCompletionProgram
 from typing import Optional, List
 from pydantic import Field, BaseModel
 import os
-import json
-import time
-from pydantic import ValidationError
-from Description import products
-from Customers import customers
 from dotenv import load_dotenv
 
 load_dotenv()
-llm = Gemini(
-    model="models/gemini-1.0-pro",
-    api_key=os.getenv('GOOGLE_API_KEY'),
-)
+# llm = Gemini(
+#     model="models/gemini-1.0-pro",
+#     api_key=os.getenv('GOOGLE_API_KEY'),
+# )
 
-llm1 = Gemini(
+llm = Gemini(
     model="models/gemini-1.5-flash-latest",
     api_key = os.getenv('GOOGLE_API_KEY_1')
 )
-
 def annualReport_details(doc_text):
     prompt = PromptTemplate(
         """
@@ -81,37 +75,7 @@ def annualReport_details(doc_text):
     return details
 
 
-def BRSR_details(doc_text):
-    prompt = PromptTemplate(
-        """
-        You are an expert assistant for extracting company information from documents in JSON format.
-        Extract all the data carefully by analyzing and understanding the provided document for the current year and the previous year.
-        REMEMBER to return extracted data only from the provided context.
-        CONTEXT:
-        {text}
-        """
-    )
-
-    class CompanyDetails(BaseModel):
-        """ Company details """
-
-        year: Optional[int] = Field(description="Reporting Year")
-        esg_type: Optional[str] = Field(description="Type of ESG (Environmental, Social, or Governance)")
-        esg_category: Optional[str] = Field(description="Category within ESG Type")
-        value: Optional[float] = Field(description="Value reported for the ESG parameter")
-        values_in_percentage: Optional[float] = Field(description="Values expressed in percentage")
-        yes_or_no: Optional[str] = Field(description="Indicator for Yes or No")
-        unit: Optional[str] = Field(description="Unit of Measurement (e.g., Days, Percentage, Kilolitres, Giga Joules)")
-
-    class Details(BaseModel):
-        """ Company Details """
-        company_details: List[CompanyDetails] = Field(description="Details about the company, including ESG data")
-
-    details = extract_pydantic_data(Details, prompt, ' '.join(doc_text))
-    return details
-
-
-def extract_pydantic_data(model, prompt, text, llm=llm1):
+def extract_pydantic_data(model, prompt, text, llm=llm):
     program = LLMTextCompletionProgram.from_defaults(
         output_cls=model,
         llm=llm,
@@ -172,10 +136,10 @@ def update_existing_excel(pdf_data, sheet_name, excel_path, company_name, indust
 
 def main():
     warnings.filterwarnings("ignore")
-    company_name = 'Thyrocare Technologies Ltd'
-    industry_name = 'Healthcare Service Provider'
-    annual_reports_path = "../AnnualReports/Thyrocare_AnnualReport.pdf"
-    brsr_path = "../BRSR/krsnaa_AnnualReport.pdf"
+    company_name = 'Uni Abex Ltd'
+    industry_name = 'Industrial Products'
+    annual_reports_path = "../AnnualReports/UniAbexAnnRep.pdf"
+    # brsr_path = "../BRSR/krsnaa_AnnualReport.pdf"
     excel_path = "../ExcelFiles/pdfData.xlsx"
 
     print("Starting Annual Reports Scraper")
@@ -183,17 +147,13 @@ def main():
     annual_report_details = annualReport_details(annual_report_text)
     print(annual_report_details)
     update_existing_excel(annual_report_details['company_details'], 'Company Details', excel_path, company_name, industry_name)
-    product = annual_report_details['company_details']['products']
-    customer = annual_report_details['company_details']['customers']
 
-    print(product)
-    print(customer)
 
     # print("Starting BRSR Scraper")
     # brsr_text = extract_clean_text_from_pdf(brsr_path)
     # brsr_details = BRSR_details(brsr_text)
     # update_existing_excel(brsr_details['company_details'], 'Company ESG', excel_path, company_name, industry_name)
-    #
+
 
 
 if __name__ == "__main__":
