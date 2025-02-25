@@ -131,14 +131,26 @@ def customers(customer: List[str], company_name, industry_name):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-customers( [
-'Jindal Steel & Power',
-'NALCO (National Aluminium Company Limited)',
-'Welspun',
-'Godrej',
-'Crompton Greaves',
-'AIA Engineering Ltd',
-'Ashok Leyland',
-'Sunflag Steel',
+customers(  [
+    "Rosenberger",
+    "Amara Raja",
+    "Rosenberger",
+    "Dura-Line",
+    "Uflex",
+    "Almonard",
+    "Baba Premium Land",
+    "LT Foods",
+    "Pallavaa Group",
+    "Campco",
+    "Vishal Mega Mart",
+    "IRCTC (Indian Railway Catering and Tourism Corporation)",
+    "Jyothy Laboratories Limited",
+    "Ferrero",
+    "Shikhar Group",
+    "Dabur",
+    "UltraTech Cement",
+    "Patanjali",
+    "Mondelez International",
+    "Airtel"
 ]
-, "Kalyan", 'Industrial Products')
+, "Avg ", 'Logistics Solution Provider')

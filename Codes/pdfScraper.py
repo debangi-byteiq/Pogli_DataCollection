@@ -5,7 +5,7 @@ import warnings
 from llama_index.llms.gemini import Gemini
 from llama_index.core.prompts import PromptTemplate
 from llama_index.core.program import LLMTextCompletionProgram
-from typing import Optional, List
+from typing import Optional
 from pydantic import Field, BaseModel
 import os
 from dotenv import load_dotenv
@@ -136,11 +136,11 @@ def update_existing_excel(pdf_data, sheet_name, excel_path, company_name, indust
 
 def main():
     warnings.filterwarnings("ignore")
-    company_name = 'Uni Abex Ltd'
-    industry_name = 'Industrial Products'
-    annual_reports_path = "../AnnualReports/UniAbexAnnRep.pdf"
+    company_name = 'ANUH PHARMA LTD.'
+    industry_name = 'Pharmaceuticals'
+    annual_reports_path = "../AnnualReports/anuh.pdf"
     # brsr_path = "../BRSR/krsnaa_AnnualReport.pdf"
-    excel_path = "../ExcelFiles/pdfData.xlsx"
+    excel_path = "../ExcelFiles/pdfData1.xlsx"
 
     print("Starting Annual Reports Scraper")
     annual_report_text = extract_clean_text_from_pdf(annual_reports_path)

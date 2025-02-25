@@ -45,7 +45,7 @@ def get_financial_data(page, company, industry, excel_path):
         return pd.DataFrame(), pd.DataFrame()
 
     # Process Annual Trends
-    financial_annual_df = process_table(tables1[3], 'Annual')
+    financial_annual_df = process_table(tables1[2], 'Annual')
     financial_annual_df['Company Name'] = company
     financial_annual_df['Industry Name'] = industry
     page.go_back()
@@ -159,18 +159,18 @@ def main(url):
         time.sleep(2)
 
         # Specify the path where you want to save the Excel file
-        excel_path = "../ExcelFiles/FinancialData_BSE.xlsx"
+        excel_path = "../ExcelFiles/FinancialData_BSE1.xlsx"
         all_financial_quarterly_data = pd.DataFrame()
         all_financial_annual_data = pd.DataFrame()
         all_meetings_data = pd.DataFrame()
         try:
             # Get financial results with industry name
-            financial_quarterly_data, financial_annual_data = get_financial_data(page, company,"Auto Components & Equipments", excel_path)
+            financial_quarterly_data, financial_annual_data = get_financial_data(page, company,"Computers - Software & Consulting", excel_path)
             all_financial_quarterly_data = pd.concat([all_financial_quarterly_data, financial_quarterly_data], ignore_index=True)
             all_financial_annual_data = pd.concat([all_financial_annual_data, financial_annual_data], ignore_index=True)
 
             # Get meeting data
-            meetings_data = get_meetings_data(page, company, url, "Auto Components & Equipments")
+            meetings_data = get_meetings_data(page, company, url, "Computers - Software & Consulting")
             all_meetings_data = pd.concat([all_meetings_data, meetings_data], ignore_index=True)
 
             # Check if the Excel file exists
@@ -204,24 +204,15 @@ def main(url):
 
 
 if __name__ == "__main__":
-    urls = [
-        'https://www.bseindia.com/stock-share-price/shivam-autotech-ltd/shivamauto/532776/',
-        'https://www.bseindia.com/stock-share-price/fiem-industries-ltd/fiemind/532768/',
-        'https://www.bseindia.com/stock-share-price/india-nippon-electricals-ltd/indnippon/532240/',
-        'https://www.bseindia.com/stock-share-price/lumax-auto-technologies-ltd/lumaxtech/532796/',
-        'https://www.bseindia.com/stock-share-price/sandhar-technologies-ltd/sandhar/541163/',
-        'https://www.bseindia.com/stock-share-price/nrb-bearings-ltd/nrbbearing/530367/',
-        'https://www.bseindia.com/stock-share-price/mmforgings-ltd/mmfl/522241/',
-        'https://www.bseindia.com/stock-share-price/steel-strips-wheels-ltd/sswl/513262/',
-        'https://www.bseindia.com/stock-share-price/igarashi-motors-india-ltd/igarashi/517380/',
-        'https://www.bseindia.com/stock-share-price/jay-bharat-maruti-ltd/jaybarmaru/520066/',
-        'https://www.bseindia.com/stock-share-price/g-n-a-axles-ltd/gna/540124/',
-        'https://www.bseindia.com/stock-share-price/talbros-automotive-components-ltd/talbroauto/505160/',
-        'https://www.bseindia.com/stock-share-price/lumax-industries-ltd/lumaxind/517206/',
-        'https://www.bseindia.com/stock-share-price/wheels-india-ltd/wheels/590073/',
-        'https://www.bseindia.com/stock-share-price/bharat-seats-ltd/bharatse/523229/',
-        'https://www.bseindia.com/stock-share-price/alicon-castalloy-limited/alicon/531147/',
-    ]
+    urls = ['https://www.bseindia.com/stock-share-price/mindteck-(india)-ltd/mindteck/517344/',
+            'https://www.bseindia.com/stock-share-price/ksolves-india-ltd/ksolves/543599/',
+            'https://www.bseindia.com/stock-share-price/alphalogic-techsys-ltd/alphalogic/542770/',
+            'https://www.bseindia.com/stock-share-price/nintec-systems-ltd/ninsys/539843/',
+            'https://www.bseindia.com/stock-share-price/cybertech-systems-and-software-ltd/cybertech/532173/',
+            'https://www.bseindia.com/stock-share-price/rssoftware-india-ltd/rssoftware/517447/',
+            'https://www.bseindia.com/stock-share-price/saksoft-ltd/saksoft/590051/',
+            ]
+
     for url in urls:
         main(url)
         time.sleep(5)

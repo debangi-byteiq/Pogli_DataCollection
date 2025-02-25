@@ -170,7 +170,7 @@ def main(url):
         print("This might take a while...")
 
         # Define the Excel file path
-        excel_path = "../ExcelFiles/Combined_data_BSE.xlsx"
+        excel_path = "../ExcelFiles/Combined_data_BSE1.xlsx"
 
         try:
             #Scrape all the data
@@ -179,7 +179,7 @@ def main(url):
             df_peers = get_peer_data(page)
             for df in [df_equity, df_corpgov, df_corpgov_filtered, df_peers]:
                 df['Company Name'] = company 
-                df['Industry Name'] = "Auto Components & Equipments"
+                df['Industry Name'] = "Computers - Software & Consulting"
 
             # Check if the file exists
             if os.path.exists(excel_path):
@@ -211,24 +211,14 @@ def main(url):
 
 
 if __name__ == "__main__":
-    urls = [
-        'https://www.bseindia.com/stock-share-price/shivam-autotech-ltd/shivamauto/532776/',
-        'https://www.bseindia.com/stock-share-price/fiem-industries-ltd/fiemind/532768/',
-        'https://www.bseindia.com/stock-share-price/india-nippon-electricals-ltd/indnippon/532240/',
-        'https://www.bseindia.com/stock-share-price/lumax-auto-technologies-ltd/lumaxtech/532796/',
-        'https://www.bseindia.com/stock-share-price/sandhar-technologies-ltd/sandhar/541163/',
-        'https://www.bseindia.com/stock-share-price/nrb-bearings-ltd/nrbbearing/530367/',
-        'https://www.bseindia.com/stock-share-price/mmforgings-ltd/mmfl/522241/',
-        'https://www.bseindia.com/stock-share-price/steel-strips-wheels-ltd/sswl/513262/',
-        'https://www.bseindia.com/stock-share-price/igarashi-motors-india-ltd/igarashi/517380/',
-        'https://www.bseindia.com/stock-share-price/jay-bharat-maruti-ltd/jaybarmaru/520066/',
-        'https://www.bseindia.com/stock-share-price/g-n-a-axles-ltd/gna/540124/',
-        'https://www.bseindia.com/stock-share-price/talbros-automotive-components-ltd/talbroauto/505160/',
-        'https://www.bseindia.com/stock-share-price/lumax-industries-ltd/lumaxind/517206/',
-        'https://www.bseindia.com/stock-share-price/wheels-india-ltd/wheels/590073/',
-        'https://www.bseindia.com/stock-share-price/bharat-seats-ltd/bharatse/523229/',
-        'https://www.bseindia.com/stock-share-price/alicon-castalloy-limited/alicon/531147/',
-    ]
+    urls =  ['https://www.bseindia.com/stock-share-price/mindteck-(india)-ltd/mindteck/517344/',
+            'https://www.bseindia.com/stock-share-price/ksolves-india-ltd/ksolves/543599/',
+            'https://www.bseindia.com/stock-share-price/alphalogic-techsys-ltd/alphalogic/542770/',
+            'https://www.bseindia.com/stock-share-price/nintec-systems-ltd/ninsys/539843/',
+            'https://www.bseindia.com/stock-share-price/cybertech-systems-and-software-ltd/cybertech/532173/',
+            'https://www.bseindia.com/stock-share-price/rssoftware-india-ltd/rssoftware/517447/',
+            'https://www.bseindia.com/stock-share-price/saksoft-ltd/saksoft/590051/',
+            ]
     for url in urls:
         main(url)
         time.sleep(5)
