@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import warnings
 import pandas as pd
 import os
+from company_links import company_urls,industry_name
 
 
 def get_equity_data(page):
@@ -158,7 +159,7 @@ def get_corpgov_data(page):
 
 def main(url):
     l = url.split('/')
-    company = l[4].strip().capitalize()
+    company = l[4].strip().replace('-', ' ').title()
     warnings.filterwarnings("ignore")
 
     with sync_playwright() as p:
@@ -170,7 +171,7 @@ def main(url):
         print("This might take a while...")
 
         # Define the Excel file path
-        excel_path = "../ExcelFiles/Combined_data_BSE1.xlsx"
+        excel_path = "../ExcelFiles/New_Company_data2.xlsx"
 
         try:
             #Scrape all the data
@@ -179,7 +180,7 @@ def main(url):
             df_peers = get_peer_data(page)
             for df in [df_equity, df_corpgov, df_corpgov_filtered, df_peers]:
                 df['Company Name'] = company 
-                df['Industry Name'] = "Computers - Software & Consulting"
+                df['Industry Name'] = industry_name
 
             # Check if the file exists
             if os.path.exists(excel_path):
@@ -211,14 +212,9 @@ def main(url):
 
 
 if __name__ == "__main__":
-    urls =  ['https://www.bseindia.com/stock-share-price/mindteck-(india)-ltd/mindteck/517344/',
-            'https://www.bseindia.com/stock-share-price/ksolves-india-ltd/ksolves/543599/',
-            'https://www.bseindia.com/stock-share-price/alphalogic-techsys-ltd/alphalogic/542770/',
-            'https://www.bseindia.com/stock-share-price/nintec-systems-ltd/ninsys/539843/',
-            'https://www.bseindia.com/stock-share-price/cybertech-systems-and-software-ltd/cybertech/532173/',
-            'https://www.bseindia.com/stock-share-price/rssoftware-india-ltd/rssoftware/517447/',
-            'https://www.bseindia.com/stock-share-price/saksoft-ltd/saksoft/590051/',
-            ]
+    urls = company_urls
+    print(len(urls))
+
     for url in urls:
         main(url)
         time.sleep(5)

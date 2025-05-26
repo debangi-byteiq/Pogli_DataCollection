@@ -37,35 +37,39 @@ def annualReport_details(doc_text):
 
         cin: Optional[str] = Field(description="CIN (Corporate Identification Number)")
         registered_office_address: Optional[str] = Field(description="Registered Office Address")
-        national_operating_centers: Optional[str] = Field(description="Count of National Operating sites")
-        international_operating_centers: Optional[str] = Field(description="Count of International Operating Centers")
-        corporate_address: Optional[str] = Field(description="Corporate Address")
-        country_name: Optional[str] = Field(description="Country Name")
-        stock_exchange_listed: Optional[str] = Field(description="Where is the company listed for stock exchange(NSE/BSE/NSE-BSE)")
-        paid_up_share_capital: Optional[str] = Field(description="Paid-up Share Capital")
-        assurance_provider: Optional[str] = Field(description="Assurance Provider")
-        assurance_type: Optional[str] = Field(description="Assurance Type")
-        csr_applicable: Optional[str] = Field(description="CSR Applicable (Yes/No)")
-        turnover: Optional[str] = Field(description="Turnover in INR")
-        net_worth: Optional[str] = Field(description="Net Worth in INR")
-        phone_number: Optional[str] = Field(description="Phone Number of the company")
-        email_id: Optional[str] = Field(description="Email ID of the company")
-        founder_name: Optional[str] = Field(description="Founder Name")
-        founder_designation: Optional[str] = Field(description="Founder Designation")
-        foundation_date: Optional[str] = Field(description="Foundation Date")
-        revenue: Optional[str] = Field(description="Revenue")
-        number_of_workers: Optional[str] = Field(description="Number of Workers")
-        number_of_employees: Optional[str] = Field(description="Number of Employees")
         industry_domain: Optional[str] = Field(description="Industry Domain")
         is_listed_on_bse: Optional[str] = Field(description="Is Listed on BSE or Not (Yes/No)")
         company_type: Optional[str] = Field(description="Company Type (Private/Public)")
-        complaints_filed: Optional[str] = Field(description="Complaints Filed")
-        complaints_pending: Optional[str] = Field(description="Complaints Pending")
-        days_of_account_payable: Optional[str] = Field(description="Days of Account Payable")
-        website_link: Optional[str] = Field(description="Website Link")
-        products: Optional[list] = Field(description="List of Products or services offered by the company")
-        customers: Optional[list] = Field(description="List of brand names or the company names that take services from this company or are the customers to this company")
-        operating_sites: Optional[list] = Field(description="List of Operating sites or the locations from which the company operates")
+
+        # Employee Count
+        employee_count_male: Optional[int] = Field(description="Number of Male Employees")
+        employee_count_female: Optional[int] = Field(description="Number of Female Employees")
+
+        # Turnover
+        turnover_male: Optional[float] = Field(description="Turnover for Male (%)")
+        turnover_female: Optional[float] = Field(description="Turnover for Female (%)")
+
+        # Account Payable
+        days_of_account_payable: Optional[int] = Field(description="Number of Days for Account Payable")
+
+        # Sustainable Sourcing
+        sustainable_sourcing_percentage: Optional[float] = Field(description="Percentage of Sustainable Sourcing")
+
+        # Insurance
+        insurance_health: Optional[float] = Field(description="Health Insurance Coverage (%)")
+        insurance_accident: Optional[float] = Field(description="Accident Insurance Coverage (%)")
+
+        # Training
+        training_health_safety: Optional[float] = Field(description="Health & Safety Training Coverage (%)")
+        training_skill: Optional[float] = Field(description="Skill Training Coverage (%)")
+
+        # Energy Consumption
+        energy_consumption_renewable: Optional[float] = Field(description="Renewable Energy Consumption (GJ)")
+        energy_consumption_non_renewable: Optional[float] = Field(description="Non-Renewable Energy Consumption (GJ)")
+
+        # Water Consumption
+        water_consumption_withdrawal: Optional[float] = Field(description="Water Withdrawal (Kilolitres)")
+        water_consumption_usage: Optional[float] = Field(description="Water Consumption (Kilolitres)")
 
     class Details(BaseModel):
         """Company Details"""
@@ -140,7 +144,7 @@ def main():
     industry_name = 'Auto Components'
     annual_reports_path = "../AnnualReports/bansal.pdf"
     # brsr_path = "../BRSR/krsnaa_AnnualReport.pdf"
-    excel_path = "../ExcelFiles/pdfData5.xlsx"
+    excel_path = "../ExcelFiles/ESG1.xlsx"
 
     print("Starting Annual Reports Scraper")
     annual_report_text = extract_clean_text_from_pdf(annual_reports_path)

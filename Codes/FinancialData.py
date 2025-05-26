@@ -5,7 +5,7 @@ import warnings
 import pandas as pd
 from datetime import datetime
 import os
-
+from company_links import company_urls,industry_name
 
 # To get the present date 
 def get_today_date():
@@ -147,7 +147,7 @@ def get_meetings_data(page, company, link, industry):
 
 def main(url):
     l = url.split('/')
-    company = l[4].strip().capitalize()
+    company = l[4].strip().replace('-', ' ').title()
     warnings.filterwarnings("ignore")
 
     with sync_playwright() as p:
@@ -159,18 +159,19 @@ def main(url):
         time.sleep(2)
 
         # Specify the path where you want to save the Excel file
-        excel_path = "../ExcelFiles/FinancialData_BSE1.xlsx"
+        excel_path = "../ExcelFiles/New_Financial_Data2.xlsx"
         all_financial_quarterly_data = pd.DataFrame()
         all_financial_annual_data = pd.DataFrame()
         all_meetings_data = pd.DataFrame()
         try:
             # Get financial results with industry name
-            financial_quarterly_data, financial_annual_data = get_financial_data(page, company,"Computers - Software & Consulting", excel_path)
+            financial_quarterly_data, financial_annual_data = get_financial_data(page, company,industry_name, excel_path)
             all_financial_quarterly_data = pd.concat([all_financial_quarterly_data, financial_quarterly_data], ignore_index=True)
             all_financial_annual_data = pd.concat([all_financial_annual_data, financial_annual_data], ignore_index=True)
 
             # Get meeting data
-            meetings_data = get_meetings_data(page, company, url, "Computers - Software & Consulting")
+            meetings_data = get_meetings_data(page, company, url, industry_name)
+
             all_meetings_data = pd.concat([all_meetings_data, meetings_data], ignore_index=True)
 
             # Check if the Excel file exists
@@ -204,14 +205,8 @@ def main(url):
 
 
 if __name__ == "__main__":
-    urls = ['https://www.bseindia.com/stock-share-price/mindteck-(india)-ltd/mindteck/517344/',
-            'https://www.bseindia.com/stock-share-price/ksolves-india-ltd/ksolves/543599/',
-            'https://www.bseindia.com/stock-share-price/alphalogic-techsys-ltd/alphalogic/542770/',
-            'https://www.bseindia.com/stock-share-price/nintec-systems-ltd/ninsys/539843/',
-            'https://www.bseindia.com/stock-share-price/cybertech-systems-and-software-ltd/cybertech/532173/',
-            'https://www.bseindia.com/stock-share-price/rssoftware-india-ltd/rssoftware/517447/',
-            'https://www.bseindia.com/stock-share-price/saksoft-ltd/saksoft/590051/',
-            ]
+    urls = company_urls
+    print(len(urls))
 
     for url in urls:
         main(url)
