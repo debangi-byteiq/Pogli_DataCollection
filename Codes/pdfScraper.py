@@ -140,7 +140,7 @@ def main():
     industry_name = 'Auto Components'
     annual_reports_path = "../AnnualReports/bansal.pdf"
     # brsr_path = "../BRSR/krsnaa_AnnualReport.pdf"
-    excel_path = "../ExcelFiles/pdfData5.xlsx"
+    excel_path = "../ExcelFiles/New_pdf_data.xlsx"
 
     print("Starting Annual Reports Scraper")
     annual_report_text = extract_clean_text_from_pdf(annual_reports_path)
@@ -153,8 +153,6 @@ def main():
     # brsr_text = extract_clean_text_from_pdf(brsr_path)
     # brsr_details = BRSR_details(brsr_text)
     # update_existing_excel(brsr_details['company_details'], 'Company ESG', excel_path, company_name, industry_name)
-
-
 
 if __name__ == "__main__":
     main()

@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import warnings
 import pandas as pd
 import os
+import re
 from company_links import company_urls,industry_name
 
 def get_dividends_data(page):
@@ -52,6 +53,8 @@ def get_dividends_data(page):
         df_dividends.rename(columns={df_dividends.columns[0]: "dividend_date", df_dividends.columns[1]: "dividend_value"},
                             inplace=True)
 
+        df_dividend2 = df_dividends[pd.to_numeric(df_dividends['dividend_date'], errors='coerce').notnull()]
+        # df_dividends = df_dividends.drop_duplicates(subset=['dividend_date', 'Company Name'])
         df_dividends.reset_index(drop=True, inplace=True)
 
         return df_dividends
@@ -63,7 +66,7 @@ def get_dividends_data(page):
 
 def main(url):
     l = url.split('/')
-    company = l[4].strip().replace('-', ' ').title()
+    company = re.sub(r'-+', ' ', l[4].strip()).title()
     warnings.filterwarnings("ignore")
 
     with sync_playwright() as p:
@@ -75,7 +78,7 @@ def main(url):
         print("This might take a while...")
 
         # Define the Excel file path
-        excel_path = "../ExcelFiles/New_Dividend_data2.xlsx"
+        excel_path = "../ExcelFiles/New_Dividend_data243.xlsx"
 
         try:
             # Scrape Dividend data only (first 2 columns, last 5 rows)
@@ -98,7 +101,6 @@ def main(url):
         except Exception as e:
             print(e)
             print("Failed to scrape data")
-
 
 if __name__ == "__main__":
     urls = company_urls

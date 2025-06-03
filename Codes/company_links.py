@@ -9,7 +9,6 @@ def get_company_urls_from_industry_page(url):
         print(f"\n Opening Industry Page: {url}")
 
         # Navigate to the page
-
         page.goto(url, timeout=60000)
 
         # Wait for the table heading to ensure table is loaded
@@ -28,11 +27,8 @@ def get_company_urls_from_industry_page(url):
         return company_urls
 
 
-
-
 # Example Industry URL
-industry_page_url = "https://www.bseindia.com/markets/Equity/EQReports/IndustryView.html?expandable=2&page=IN070101001&scripname=Civil%20Construction"
-
+industry_page_url = "https://www.bseindia.com/markets/Equity/EQReports/IndustryView.html?expandable=2&page=IN010302001&scripname=Aluminium"
 
 try:
     # Split on 'scripname='
@@ -58,10 +54,13 @@ try:
 except Exception as e:
     print(f"Error: {e}")
 # Get company URLs from the industry page
-if __name__ == "__main__":
-    company_urls = get_company_urls_from_industry_page(industry_page_url)
-    print("\n Extracted Company URLs:")
-    print(company_urls)
-    print(len(company_urls))
+company_urls = get_company_urls_from_industry_page(industry_page_url)
+print(company_urls)
 
+# Print extracted URLs
+print("\n Extracted Company URLs:")
+if __name__ == "__main__":
+
+    for link in company_urls:
+        print(link)
 

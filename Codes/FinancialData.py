@@ -5,6 +5,7 @@ import warnings
 import pandas as pd
 from datetime import datetime
 import os
+import re
 from company_links import company_urls,industry_name
 
 # To get the present date 
@@ -147,7 +148,7 @@ def get_meetings_data(page, company, link, industry):
 
 def main(url):
     l = url.split('/')
-    company = l[4].strip().replace('-', ' ').title()
+    company = re.sub(r'-+', ' ', l[4].strip()).title()
     warnings.filterwarnings("ignore")
 
     with sync_playwright() as p:
@@ -159,13 +160,14 @@ def main(url):
         time.sleep(2)
 
         # Specify the path where you want to save the Excel file
-        excel_path = "../ExcelFiles/New_Financial_Data2.xlsx"
+        excel_path = "../ExcelFiles/New_Financial_Data243.xlsx"
         all_financial_quarterly_data = pd.DataFrame()
         all_financial_annual_data = pd.DataFrame()
         all_meetings_data = pd.DataFrame()
         try:
             # Get financial results with industry name
             financial_quarterly_data, financial_annual_data = get_financial_data(page, company,industry_name, excel_path)
+            financial_annual_data.rename(columns={'Year': 'Date'}, inplace=True)
             all_financial_quarterly_data = pd.concat([all_financial_quarterly_data, financial_quarterly_data], ignore_index=True)
             all_financial_annual_data = pd.concat([all_financial_annual_data, financial_annual_data], ignore_index=True)
 

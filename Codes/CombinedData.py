@@ -4,8 +4,13 @@ from bs4 import BeautifulSoup
 import warnings
 import pandas as pd
 import os
+import re
 from company_links import company_urls,industry_name
+from datetime import datetime
 
+def get_today_date():
+    today = datetime.now()
+    return f"{today.day}/{today.month:02}/{today.year}"
 
 def get_equity_data(page):
     soup = BeautifulSoup(page.content(), 'html.parser')
@@ -33,13 +38,18 @@ def get_equity_data(page):
     row_list.append(data.values())
     df_equity = pd.DataFrame(row_list, columns=data.keys())
 
-    # Check if 'PE/PB' column exists in the DataFrame
     if 'PE/PB' in df_equity.columns:
-        # Split the 'PE/PB' column into two columns 'PE' and 'PB'
         df_equity[['PE', 'PB']] = df_equity['PE/PB'].str.split(' / ', expand=True)
-
-        # Drop the original 'PE/PB' column
         df_equity.drop(columns=['PE/PB'], inplace=True)
+
+        # Keep only required columns
+    required_columns = ['Mcap Full (Cr.)', 'PE', 'PB', 'ROE']
+    df_equity = df_equity[[col for col in required_columns if col in df_equity.columns]]
+    df_equity.rename(columns={'Mcap Full (Cr.)': 'Market Cap'}, inplace=True)
+    # Add Current Date and Create Date columns
+    today_date = get_today_date()
+    df_equity['Current Date'] = today_date
+    df_equity['Create Date'] = today_date
 
     return df_equity
 
@@ -159,7 +169,7 @@ def get_corpgov_data(page):
 
 def main(url):
     l = url.split('/')
-    company = l[4].strip().replace('-', ' ').title()
+    company = re.sub(r'-+', ' ', l[4].strip()).title()
     warnings.filterwarnings("ignore")
 
     with sync_playwright() as p:
@@ -171,7 +181,7 @@ def main(url):
         print("This might take a while...")
 
         # Define the Excel file path
-        excel_path = "../ExcelFiles/New_Company_data2.xlsx"
+        excel_path = "../ExcelFiles/New_Company_data243.xlsx"
 
         try:
             #Scrape all the data
